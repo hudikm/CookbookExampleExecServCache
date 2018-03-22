@@ -6,8 +6,8 @@
 
     <ImageView
         android:id="@+id/smallImage"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:layout_width="128dp"
+        android:layout_height="128dp"
         android:textAppearance="?attr/textAppearanceListItem" />
 
     <TextView

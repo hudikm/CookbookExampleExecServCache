@@ -74,6 +74,8 @@ public class RecipeFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+        RetainFragment.getInstance().cancelDownloads();
+
     }
 
     /**

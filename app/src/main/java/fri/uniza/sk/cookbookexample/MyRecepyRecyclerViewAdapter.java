@@ -1,6 +1,7 @@
 package fri.uniza.sk.cookbookexample;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,24 +37,37 @@ public class MyRecepyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecepyRe
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         holder.mItem = recipes.get(position);
-        holder.position = position;
+        synchronized (holder) {
+            holder.position = position;
 
-        //holder.mImageView.setImageBitmap(recipes.get(position).getBitmapFromAsset(context));
-        DownloadTask downloadTask = new DownloadTask(holder, position, context);
-        downloadTask.execute();
+            //Create new DownloadTask
+            DownloadTask downloadTask = new DownloadTask(holder, position, context);
 
-        holder.mContentView.setText(recipes.get(position).title);
+            //If possible get bitmapFromCache
+            Bitmap bitmapFromCache = downloadTask.getBitmapFromCache();
 
-        holder.mView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (null != mListener) {
-                    // Notify the active callbacks interface (the activity, if the
-                    // fragment is attached to one) that an item has been selected.
-                    mListener.onListFragmentInteraction(holder.mItem,position);
-                }
+            //Check if bitmap was found in cache
+            if (bitmapFromCache != null)
+                holder.mImageView.setImageBitmap(bitmapFromCache);
+            else {
+                holder.mImageView.setImageBitmap(Recipe.getBitmapOfSpinner(context));
+                //Image was not found in cache -> Download image
+                RetainFragment.getInstance().addNewDownloadTask(downloadTask);
             }
-        });
+
+            holder.mContentView.setText(recipes.get(position).title);
+
+            holder.mView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (null != mListener) {
+                        // Notify the active callbacks interface (the activity, if the
+                        // fragment is attached to one) that an item has been selected.
+                        mListener.onListFragmentInteraction(holder.mItem, position);
+                    }
+                }
+            });
+        }
     }
 
     @Override

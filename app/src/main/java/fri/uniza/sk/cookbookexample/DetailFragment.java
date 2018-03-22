@@ -1,6 +1,7 @@
 package fri.uniza.sk.cookbookexample;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -11,6 +12,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import java.io.IOException;
 
 import fri.uniza.sk.cookbookexample.model.Singleton;
 
@@ -34,7 +37,7 @@ public class DetailFragment extends Fragment {
         return fragment;
     }
 
-    public void addPositonAgrument(int position){
+    public void addPositonAgrument(int position) {
         Bundle args = new Bundle();
         args.putInt(ARG_PARAM1, position);
         this.setArguments(args);
@@ -60,7 +63,19 @@ public class DetailFragment extends Fragment {
     }
 
     private void initData(View view) {
-        ((ImageView) view.findViewById(R.id.recipeImage)).setImageBitmap(Singleton.getInstance().getRecipes().get(position).getBitmapFromAsset(getContext()));
+        Bitmap bitmapCache = RetainFragment.getInstance().getBitmapCache(String.valueOf(Singleton.getInstance().getRecipes().get(position).imageUrl));
+        if (bitmapCache == null) {
+            try {
+                bitmapCache = Singleton.getInstance().getRecipes().get(position).getBitmapFromAsset(getContext());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        ((ImageView) view.findViewById(R.id.recipeImage)).setImageBitmap(bitmapCache);
+
+
         ((TextView) view.findViewById(R.id.detailRecipe)).setText(Singleton.getInstance().getRecipes().get(position).detail);
         ListView listView = (ListView) view.findViewById(R.id.ingredientsList);
         listView.setAdapter(new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, Singleton.getInstance().getRecipes().get(position).ingredients));
